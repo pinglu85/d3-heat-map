@@ -16,29 +16,34 @@ body {
   width: 100%;
 }
 
-#title {
+.header {
   text-align: center;
   padding: 32px;
 }
 
-#title h1 {
+#title {
   font-size: 24px;
   font-weight: 600;
 }
 
-#title p {
+#description {
   margin-top: 16px;
   font-size: 18px;
 }
 
+.cell:hover {
+  stroke: #000;
+  stroke-width: 2;
+}
+
 #tooltip {
   position: absolute;
-  background-color: rgba(50, 59, 71, 0.527);
+  background-color: rgb(30, 35, 43);
   border-radius: 8px;
   border: 0;
   padding: 12px;
   text-align: center;
   color: #f7f6f6;
-  font-size: 12px;
+  font-size: 16px;
   pointer-events: none;
 }
