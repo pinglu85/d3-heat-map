@@ -172,11 +172,14 @@ d3.json(url)
       .attr('font-size', fontSize);
 
     // Tooltip
-    const tooltip = d3
-      .select('.heat-map')
-      .append('div')
+    const tip = d3
+      .tip()
       .attr('id', 'tooltip')
-      .style('opacity', 0);
+      .html((d) => d)
+      .direction('n')
+      .offset([-15, 0]);
+
+    svg.call(tip);
 
     // Cells
     const cells = svg.append('g').attr('id', 'cells');
@@ -187,7 +190,7 @@ d3.json(url)
       .enter()
       .append('rect')
       .attr('data-year', (d) => d.year)
-      .attr('data-month', (d) => d.month)
+      .attr('data-month', (d) => d.month - 1)
       .attr('data-temp', (d) => baseTemperature + d.variance)
       .attr('class', 'cell')
       .attr('x', (d) => xScale(d.year) + xMarginLeft + 1)
@@ -195,19 +198,16 @@ d3.json(url)
       .attr('width', cellWidth)
       .attr('height', height / 12)
       .attr('fill', (d) => legendThreshold(baseTemperature + d.variance))
-      .on('mouseover', (d) => {
+      .on('mouseover', (d, i, n) => {
         const date = new Date(d.year, d.month);
-        const html = `<p>${d3.timeFormat('%Y - %B')(date)}</p><p>${d3.format(
-          '.1f'
-        )(baseTemperature + d.variance)} &#8451;</p><p>${d3.format('.1f')(
-          d.variance
-        )} &#8451;</p>`;
-        tooltip.transition().duration(200).style('opacity', 0.9);
-        tooltip
-          .attr('data-year', d.year)
-          .html(html)
-          .style('left', `${xScale(d.year) + xMarginLeft / 2 + 1}px`)
-          .style('top', `${yScale(d.month - 1) - height / 12}px`);
-      });
+        const str = `<span>${d3.timeFormat('%Y - %B')(
+          date
+        )}</span><span>${d3.format('.1f')(
+          baseTemperature + d.variance
+        )} &#8451;</span><span>${d3.format('.1f')(d.variance)} &#8451;</span>`;
+        tip.attr('data-year', d.year);
+        tip.show(str, n[i]);
+      })
+      .on('mouseout', tip.hide);
   })
   .catch((err) => console.log(err));
