@@ -2,7 +2,7 @@ const cellWidth = 5;
 const height = 420;
 const xMarginLeft = 200;
 const xMarginRight = 200;
-const yMarginBottom = 200;
+const yMarginBottom = 140;
 const legendWidth = 500;
 const legendHeight = 26;
 const fontSize = 16;
@@ -30,7 +30,7 @@ d3.json(url)
   .then((data) => {
     const baseTemperature = data.baseTemperature;
     const variance = [...data.monthlyVariance];
-    const width = Math.floor(variance.length / 12) * cellWidth;
+    const width = Math.ceil(variance.length / 12) * cellWidth;
     const svg = d3
       .select('.heat-map')
       .append('svg')
@@ -46,7 +46,7 @@ d3.json(url)
     // Year Scale
     const years = variance.map((val) => val.year);
     const filteredYears = [...new Set(years)];
-    const xScale = d3.scaleBand().domain(filteredYears).range([0, width]);
+    const xScale = d3.scaleBand().domain(filteredYears).range([1, width]);
 
     // Month Scale
     const yScale = d3
@@ -58,13 +58,18 @@ d3.json(url)
     const xAxis = d3
       .axisBottom(xScale)
       .tickValues(filteredYears.filter((year) => year % 10 === 0))
+      .tickSize(10, 1)
       .tickSizeOuter(0);
     svg
       .append('g')
       .call(xAxis)
       .attr('id', 'x-axis')
       .attr('transform', `translate(${xMarginLeft}, ${height})`)
-      .attr('font-size', fontSize);
+      .attr('font-size', fontSize)
+      // Cover the gap between 0 to 1
+      .append('path')
+      .attr('stroke', '#000')
+      .attr('d', 'M0.5,0.5H1.5');
 
     // X axis description
     svg
@@ -193,13 +198,13 @@ d3.json(url)
       .attr('data-month', (d) => d.month - 1)
       .attr('data-temp', (d) => baseTemperature + d.variance)
       .attr('class', 'cell')
-      .attr('x', (d) => xScale(d.year) + xMarginLeft + 1)
+      .attr('x', (d) => xScale(d.year) + xMarginLeft)
       .attr('y', (d) => yScale(d.month - 1))
-      .attr('width', cellWidth)
-      .attr('height', height / 12)
+      .attr('width', (d) => xScale.bandwidth(d.year))
+      .attr('height', (d) => yScale.bandwidth(d.month - 1))
       .attr('fill', (d) => legendThreshold(baseTemperature + d.variance))
       .on('mouseover', (d, i, n) => {
-        const date = new Date(d.year, d.month);
+        const date = new Date(d.year, d.month - 1);
         const str = `<span>${d3.timeFormat('%Y - %B')(
           date
         )}</span><span>${d3.format('.1f')(
